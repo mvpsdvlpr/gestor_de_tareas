@@ -1,7 +1,6 @@
 // impelmentamos librerias
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{self,BufRead,Write};
+use std::io::{self};
 
 #[derive(Debug)]
 enum Taskstatus{
@@ -9,6 +8,7 @@ enum Taskstatus{
     Complete,
 }
 
+#[derive(Debug)]
 struct Task {
     description:String,
     status:Taskstatus,
@@ -25,7 +25,7 @@ impl Task {
 
 fn main() {
     let mut tasks: HashMap<usize, Task> = HashMap::new();
-    let mut id_counter:usize =0;
+    let mut id_counter:usize =1;
 
     loop {
         println!("Gestor de Tareas");
@@ -34,21 +34,27 @@ fn main() {
         println!("3. Marcar como terminada");
         println!("4. salir");
 
-        let mut choice = String::new();
+        let mut choice:String = String::new();
         io::stdin().read_line(&mut choice).expect("Error al leer la entrada");
-        let choice = choice.trim();
+        let choice:&str = choice.trim();
         
         match choice {
             "1"=>{
                 println!("Introduce la descripcion de la tarea");
-                let mut descripcion = String::new();
-                io::stdin().read_line(&mut descripcion).expect("Error al leer la entrada");
+                let mut descripcion:String = String::new();
+                io::stdin().read_line(&mut descripcion).expect("Error al leer la entrada"); // input from cmd
                 let task:Task = Task::new(&descripcion.trim());
-                tasks.insert(id_counter,task);
-                id_counter +=1;
+
+                // id_counter +=1;
+                while tasks.contains_key(&id_counter) {
+                    id_counter +=1;
+                }
+                tasks.insert(id_counter, task);
+                println!("Tarea añadida con ID: {}", id_counter);
+
             },
             "2"=>{
-                for(id,task) in &tasks{
+                for(_id,task) in &tasks{
                     let status = match task.status {
                         Taskstatus::Pending=>"Pendiente",
                         Taskstatus::Complete=> "Completada",
@@ -59,7 +65,6 @@ fn main() {
             "3"=>{
                 println!("Introduce el ID de la tarea a marcar como completada");
                 let mut id = String::new();
-
                 io::stdin().read_line(&mut id).expect("Error al leer la entrada");
 
                 let id:usize= match id.trim().parse() {
@@ -69,7 +74,6 @@ fn main() {
                         continue
                     },
                 };
-                
                 if let Some(task) = tasks.get_mut(&id){
                     task.status = Taskstatus::Complete;
                     println!("Tarea con ID {} marcada como completada",id);
